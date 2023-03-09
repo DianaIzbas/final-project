@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class DestinationDto
 {
-    private long id;
+    private Long id;
 
     @NotEmpty(message = "Name cannot be null!")
     private String name;

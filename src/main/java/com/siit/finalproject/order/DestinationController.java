@@ -23,13 +23,14 @@ public class DestinationController
     public ResponseEntity<String> uploadDestinationCsv(@RequestParam(name = "filePath") String filePath)
     {
         try
-        {   BufferedReader br = new BufferedReader(new FileReader(filePath));
-            service.saveDestination(br);
+        {   BufferedReader file = new BufferedReader(new FileReader(filePath));
+            service.saveDestination(file);
 
         } catch (Exception e) {
-            return new ResponseEntity<>("Please select CSV file to upload. ", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Please select a file with destinations to upload. ", HttpStatus.BAD_REQUEST);
         }
 
-        return new ResponseEntity<>("CVS file is uploading", HttpStatus.OK);
+        return new ResponseEntity<>("Orders file is loading. ", HttpStatus.OK);
     }
+
 }

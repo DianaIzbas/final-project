@@ -1,10 +1,9 @@
 package com.siit.finalproject.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Data;
+
+import java.util.List;
 
 
 @Data
@@ -18,4 +17,7 @@ public class DestinationEntity
     private String name;
 
     private int distance;
+
+    @OneToMany(mappedBy = "destination", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    private List<OrderEntity> orders;
 }

@@ -4,7 +4,6 @@ import com.siit.finalproject.dto.DestinationDto;
 import com.siit.finalproject.entity.DestinationEntity;
 import org.springframework.stereotype.Component;
 
-
 @Component
 public class DestinationConverter
 {
@@ -12,7 +11,7 @@ public class DestinationConverter
     {
         DestinationEntity destinationEntity = new DestinationEntity();
 
-        if(destinationDto.getId() != 0)
+        if(destinationDto.getId() != null && destinationDto.getId() != 0)
         {
             destinationEntity.setId(destinationDto.getId());
         }

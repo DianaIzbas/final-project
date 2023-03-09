@@ -1,10 +1,7 @@
 package com.siit.finalproject.entity;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Data;
 
 @Data
@@ -19,4 +16,8 @@ public class OrderEntity
     private String name;
 
     private String deliveryDate;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "destination_id", nullable = false)
+    private DestinationEntity destination;
 }
