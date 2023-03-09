@@ -32,20 +32,30 @@ public class OrderController
             service.saveOrders(file);
 
         } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseEntity<>("Please select a file with orders to upload. ", HttpStatus.BAD_REQUEST);
         }
         if(destinationResponse.getResponse().size() >= 1)
         {
-            return new ResponseEntity<>("The following destinations are not in DB "
+            return new ResponseEntity<>("The following destinations are not in DB. "
                     + destinationResponse.getResponse().toString(), HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>("Orders file is loading. ", HttpStatus.OK);
+        return new ResponseEntity<>("Loading orders in DB. ", HttpStatus.OK);
     }
 
     @PostMapping("/add")
-    public void addOrder(@Valid @RequestBody OrderDto orderDto){
+    public ResponseEntity<String> addOrder(@Valid @RequestBody OrderDto orderDto) {
 
-        Long orderAdd = service.addOrder(orderDto);
+        Long orderAdd = null;
+        try {
+            orderAdd = service.addOrder(orderDto);
+            if (orderAdd == 0L) {
+                return new ResponseEntity<>("The order destination is not in DB. ", HttpStatus.BAD_REQUEST);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>("Order with "+ orderAdd + " is in upload in DB. ", HttpStatus.OK);
     }
 
 //    @PutMapping("/current-date")

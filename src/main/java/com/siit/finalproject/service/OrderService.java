@@ -40,13 +40,12 @@ public class OrderService {
         OrderDto orderDto = new OrderDto();
         String line;
         List<String> destinationsNotFound = new ArrayList<>();
-        int i = 0;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         while ((line = br.readLine()) != null) {
             String[] values = line.split(",");
             Optional<DestinationEntity> destination = destinationRepository.findByName(values[0]);
             if (destination.isPresent()) {
                 orderDto.setName(values[0]);
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
                 LocalDate localDate = LocalDate.parse(values[1], formatter);
                 orderDto.setDate(localDate);
                 OrderEntity orderEntity = orderConverter.fromDtoToEntity(orderDto);
@@ -65,10 +64,17 @@ public class OrderService {
 
     @Transactional
     public Long addOrder(OrderDto orderDto) {
-        OrderEntity order = orderConverter.fromDtoToEntity(orderDto);
-        OrderEntity savedOrder = orderRepository.save(order);
+        Optional<DestinationEntity> destination = destinationRepository.findByName(orderDto.getName());
+        List<String> destinationsNotFound = new ArrayList<>();
+        if(destination.isPresent())
+        {
+            OrderEntity order = orderConverter.fromDtoToEntity(orderDto);
+            order.setDestination(destination.get());
+            OrderEntity savedOrder = orderRepository.save(order);
+            return savedOrder.getId();
 
-        return savedOrder.getId();
+        }
+        return 0L;
     }
 
         //    private CompanyContributor companyContributor;

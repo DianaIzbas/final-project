@@ -11,13 +11,13 @@ public class OrderConverter {
     {
         OrderEntity orderEntity = new OrderEntity();
 
-        if(orderDto.getId() != 0 && orderDto.getId() != null)
+        if(orderDto.getId() != null && orderDto.getId() != 0)
         {
             orderEntity.setId(orderDto.getId());
         }
 
         orderEntity.setName((orderDto.getName()));
-        orderEntity.setDeliveryDate((orderDto.getDate().toString()));
+        orderEntity.setDeliveryDate(orderDto.getDate().toString());
 
         return orderEntity;
     }

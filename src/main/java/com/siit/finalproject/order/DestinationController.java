@@ -30,7 +30,7 @@ public class DestinationController
             return new ResponseEntity<>("Please select a file with destinations to upload. ", HttpStatus.BAD_REQUEST);
         }
 
-        return new ResponseEntity<>("Orders file is loading. ", HttpStatus.OK);
+        return new ResponseEntity<>("Loading destinations in DB. ", HttpStatus.OK);
     }
 
 }
