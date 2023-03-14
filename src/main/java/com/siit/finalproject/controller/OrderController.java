@@ -1,4 +1,4 @@
-package com.siit.finalproject.order;
+package com.siit.finalproject.controller;
 
 import com.siit.finalproject.dto.DestinationResponse;
 import com.siit.finalproject.dto.OrderDto;
@@ -32,16 +32,18 @@ public class OrderController {
     }
 
     @PostMapping("/upload-csv")
-    public ResponseEntity<String> uploadDestinationCsv(@RequestParam(name = "filePath") String filePath) {
-        try {
-            BufferedReader file = new BufferedReader(new FileReader(filePath));
+    public ResponseEntity<String> uploadDestinationCsv(@RequestParam(name = "filePath") String filePath)
+    {
+        try
+        {   BufferedReader file = new BufferedReader(new FileReader(filePath));
             service.saveOrders(file);
 
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>("Please select a file with orders to upload. ", HttpStatus.BAD_REQUEST);
         }
-        if (destinationResponse.getResponse().size() >= 1) {
+        if(destinationResponse.getResponse().size() >= 1)
+        {
             return new ResponseEntity<>("The following destinations are not in DB. "
                     + destinationResponse.getResponse().toString(), HttpStatus.BAD_REQUEST);
         }

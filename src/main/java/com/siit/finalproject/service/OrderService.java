@@ -1,10 +1,13 @@
 package com.siit.finalproject.service;
 
+import com.siit.finalproject.actuator.CompanyContributor;
 import com.siit.finalproject.convertDto.OrderConverter;
 import com.siit.finalproject.dto.DestinationResponse;
 import com.siit.finalproject.dto.OrderDto;
 import com.siit.finalproject.entity.DestinationEntity;
 import com.siit.finalproject.entity.OrderEntity;
+import com.siit.finalproject.enums.OrderEnum;
+import com.siit.finalproject.exception.DataNotFound;
 import com.siit.finalproject.enums.OrderEnum;
 import com.siit.finalproject.repository.DestinationRepository;
 import com.siit.finalproject.repository.OrderRepository;
@@ -15,18 +18,21 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
+    private final CompanyContributor companyContributor;
     private final OrderRepository orderRepository;
     private final OrderConverter orderConverter;
     private final DestinationRepository destinationRepository;
     private final DestinationResponse destinationResponse;
 
-    public OrderService(OrderRepository orderRepository, OrderConverter orderConverter, DestinationRepository destinationRepository, DestinationResponse destinationResponse) {
+    public OrderService(CompanyContributor companyContributor, OrderRepository orderRepository, OrderConverter orderConverter, DestinationRepository destinationRepository, DestinationResponse destinationResponse) {
+        this.companyContributor = companyContributor;
         this.orderRepository = orderRepository;
         this.orderConverter = orderConverter;
         this.destinationRepository = destinationRepository;
@@ -83,10 +89,49 @@ public class OrderService {
             order.setStatus(OrderEnum.NEW);
             OrderEntity savedOrder = orderRepository.save(order);
             return savedOrder.getId();
+
         }
         return 0L;
     }
 
+    public void updateOrderStatus(Long orderId, OrderEnum orderEnum) throws DataNotFound
+    {
+        Optional<OrderEntity> orderEntityOptional = orderRepository.findById(orderId);
+        if (orderEntityOptional.isEmpty()) {
+            throw new DataNotFound(String.format("The student with id %s could not be found in database.", orderId));
+        }
+        OrderEntity order = orderEntityOptional.get();
+        if (orderEnum != null) {
+            order.setStatus(orderEnum);
+        }
+        orderRepository.save(order);
+    }
+    public void shipping()
+    {
+        String thisDay;
+        thisDay = companyContributor.newDay().toString();
+        orderRepository.findAll().stream()
+                .filter(orderEntity -> orderEntity.getDeliveryDate().equals(thisDay))
+                .forEach(orderEntity -> {
+                    try {
+                        updateOrderStatus(orderEntity.getId(), OrderEnum.DELIVERING);
+                    } catch (DataNotFound e) {
+                        e.printStackTrace();
+                    }
+                });
+
+        List<OrderEntity> todayOrders = orderRepository.findAll().stream()
+                .filter(orderEntity -> orderEntity.getDeliveryDate().equals(thisDay)).toList();
+
+        List<DestinationEntity> destinationEntityList = destinationRepository.findAll().stream().toList();
+
+        for(DestinationEntity destination : destinationEntityList)
+        {
+            List<Long> orderIds = new ArrayList<>();
+            List<OrderEntity> orders = todayOrders.stream()
+                    .filter(orderEntity -> orderEntity.getDestination().getId().equals(destination.getId())).toList();
+            orders.forEach(orderEntity -> orderIds.add(orderEntity.getId()));
+            startDeliveries( destination, orderIds);
     public List<OrderEntity>getAllOrders (){
 
         return (List<OrderEntity>) orderRepository.findAll();
@@ -113,4 +158,47 @@ public class OrderService {
         //        companyContributor.incrementCurrentDate();
         //    }
 
+        }
+
+
+
+    }
+    public void startDeliveries(DestinationEntity destination, List<Long> orderIds)
+    {
+
+
+    }
+
+    public List<String> shippingTest()
+    {
+        String thisDay;
+        thisDay = companyContributor.newDay().toString();
+        orderRepository.findAll().stream()
+                .filter(orderEntity -> orderEntity.getDeliveryDate().equals(thisDay))
+                .forEach(orderEntity -> {
+                    try {
+                        updateOrderStatus(orderEntity.getId(), OrderEnum.DELIVERING);
+                    } catch (DataNotFound e) {
+                        e.printStackTrace();
+                    }
+                });
+
+        List<OrderEntity> todayOrders = orderRepository.findAll().stream()
+                .filter(orderEntity -> orderEntity.getDeliveryDate().equals(thisDay)).toList();
+
+        List<DestinationEntity> destinationEntityList = destinationRepository.findAll().stream().toList();
+
+        List<String> test = new ArrayList<>();
+
+        for(DestinationEntity destination : destinationEntityList)
+        {
+            List<Long> orderIds = new ArrayList<>();
+            List<OrderEntity> orders = todayOrders.stream()
+                    .filter(orderEntity -> orderEntity.getDestination().getId().equals(destination.getId())).toList();
+            orders.forEach(orderEntity -> orderIds.add(orderEntity.getId()));
+            startDeliveries( destination, orderIds);
+            test.add(destination.getName() + orderIds);
+        }
+        return test;
+    }
 }

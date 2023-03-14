@@ -1,4 +1,4 @@
-package com.siit.finalproject.order;
+package com.siit.finalproject.controller;
 
 import com.siit.finalproject.service.DestinationService;
 import org.springframework.http.HttpStatus;
