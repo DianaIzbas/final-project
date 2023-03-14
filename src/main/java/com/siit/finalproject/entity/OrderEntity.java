@@ -1,6 +1,7 @@
 package com.siit.finalproject.entity;
 
 
+import com.siit.finalproject.enums.OrderEnum;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -16,6 +17,8 @@ public class OrderEntity
     private String name;
 
     private String deliveryDate;
+
+    private OrderEnum status;
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "destination_id", nullable = false)

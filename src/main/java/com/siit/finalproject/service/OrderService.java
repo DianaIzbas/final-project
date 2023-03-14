@@ -5,6 +5,7 @@ import com.siit.finalproject.dto.DestinationResponse;
 import com.siit.finalproject.dto.OrderDto;
 import com.siit.finalproject.entity.DestinationEntity;
 import com.siit.finalproject.entity.OrderEntity;
+import com.siit.finalproject.enums.OrderEnum;
 import com.siit.finalproject.repository.DestinationRepository;
 import com.siit.finalproject.repository.OrderRepository;
 import jakarta.transaction.Transactional;
@@ -50,6 +51,7 @@ public class OrderService {
                 orderDto.setDate(localDate);
                 OrderEntity orderEntity = orderConverter.fromDtoToEntity(orderDto);
                 orderEntity.setDestination(destination.get());
+                orderEntity.setStatus(OrderEnum.NEW);
                 orderRepository.save(orderEntity);
             } else {
                 if(!destinationsNotFound.contains(values[0]))
@@ -70,11 +72,39 @@ public class OrderService {
         {
             OrderEntity order = orderConverter.fromDtoToEntity(orderDto);
             order.setDestination(destination.get());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            //postman trimite invers data?????
+            LocalDate localDate = LocalDate.parse(order.getDeliveryDate(), formatter);
+            LocalDate date = LocalDate.now();
+            if (localDate.isBefore(date)){
+
+               return 0L;
+            }
+            order.setStatus(OrderEnum.NEW);
             OrderEntity savedOrder = orderRepository.save(order);
             return savedOrder.getId();
-
         }
         return 0L;
+    }
+
+    public List<OrderEntity>getAllOrders (){
+
+        return (List<OrderEntity>) orderRepository.findAll();
+    }
+    public List<OrderEntity>getOrdersByDestinationAndDate(String Destination,String Date){
+
+       List<OrderEntity>allOrders = this.getAllOrders();
+       List<OrderEntity>selectedOrders = new ArrayList<>();
+        for (OrderEntity order : allOrders) {
+
+            if(Destination.equals("all") && order.getDeliveryDate().equals(Date)){
+                selectedOrders.add(order);
+            }
+            else if (order.getDestination().getName().equals(Destination) && order.getDeliveryDate().equals(Date)) {
+                selectedOrders.add(order);
+            }
+        }
+        return selectedOrders;
     }
 
         //    private CompanyContributor companyContributor;
