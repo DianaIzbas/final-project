@@ -1,5 +1,6 @@
 package com.siit.finalproject.controller;
 
+import com.siit.finalproject.actuator.CompanyContributor;
 import com.siit.finalproject.dto.DestinationResponse;
 import com.siit.finalproject.dto.OrderDto;
 import com.siit.finalproject.entity.OrderEntity;
@@ -24,11 +25,13 @@ public class OrderController {
     private final OrderRepository repository;
     private final OrderService service;
     private final DestinationResponse destinationResponse;
+    private final CompanyContributor companyContributor;
 
-    public OrderController(OrderRepository repository, OrderService service, DestinationResponse destinationResponse) {
+    public OrderController(OrderRepository repository, OrderService service, DestinationResponse destinationResponse, CompanyContributor companyContributor) {
         this.repository = repository;
         this.service = service;
         this.destinationResponse = destinationResponse;
+        this.companyContributor = companyContributor;
     }
 
     @PostMapping("/upload-csv")
@@ -52,49 +55,70 @@ public class OrderController {
 
     @PostMapping("/add")
     public ResponseEntity<String> addOrder(@Valid @RequestBody List<OrderDto> ordersDto) {
-        ArrayList<OrderDto> FailedOrders = new ArrayList<OrderDto>();
-        ArrayList<OrderDto> SuccessfulOrders = new ArrayList<OrderDto>();
-        Long orderAdd = null;
+        ArrayList<OrderDto> failedOrders = new ArrayList<OrderDto>();
+        ArrayList<OrderDto> successfulOrders = new ArrayList<OrderDto>();
+        OrderEntity orderAdd = null;
         for (OrderDto order : ordersDto) {
 
             try {
                 orderAdd = service.addOrder(order);
-                if (orderAdd == 0L) {
-                    FailedOrders.add(order);
+                if (orderAdd == null) {
+                    failedOrders.add(order);
                     continue;
                 }
+                order.setId(orderAdd.getId());
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            SuccessfulOrders.add(order);
+            successfulOrders.add(order);
 
         }
-        return new ResponseEntity<>("SuccessfulOrders:" + SuccessfulOrders.toString() + "\n FailedOrders:" + FailedOrders.toString(), HttpStatus.OK);
+        return new ResponseEntity<>("SuccessfulOrders:" + successfulOrders.toString() + "\n FailedOrders:" + failedOrders.toString(), HttpStatus.OK);
     }
 
     @GetMapping("/status")
-    public ResponseEntity<Integer> getStatus(@Valid @RequestParam(required = false) String date, @RequestParam(required = false) String destination){
+    public ResponseEntity<String> getStatus(@Valid @RequestParam(required = false) String dateString){
 
-        if (date == null || date.equals("")){
+        List<String> orders = new ArrayList<>();
+        try {
 
-            date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")).toString();
+            LocalDate date = companyContributor.getCurrentDate();
+
+            if (dateString != null){
+
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+                date = LocalDate.parse(dateString,formatter);
+            }
+
+            orders = service.getOrdersStatusByDate(date);
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        if (destination == null || destination.equals("")){
 
-            destination = "all";
-        }
-
-        List<OrderEntity> orders = service.getOrdersByDestinationAndDate(destination, date);
-
-
-        return new ResponseEntity<>(orders.size(), HttpStatus.OK);
-
-
-
-
+        return new ResponseEntity<>(orders.toString(), HttpStatus.OK);
 
     }
+
+//    @GetMapping("/status")
+//    public ResponseEntity<Integer> getStatus(@Valid @RequestParam(required = false) String date, @RequestParam(required = false) String destination){
+//
+//        if (date == null || date.equals("")){
+//
+//            date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")).toString();
+//        }
+//
+//        if (destination == null || destination.equals("")){
+//
+//            destination = "all";
+//        }
+//
+//        List<OrderEntity> orders = service.getOrdersByDestinationAndDate(destination, date);
+//
+//
+//        return new ResponseEntity<>(orders.size(), HttpStatus.OK);
+//    }
 
 
 

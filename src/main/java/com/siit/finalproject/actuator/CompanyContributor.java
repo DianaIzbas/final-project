@@ -10,7 +10,7 @@ import java.util.Map;
 @Component
 public class CompanyContributor implements InfoContributor {
     Integer overallProfit=258;
-    LocalDate currentDate = LocalDate.of(2021, 12, 15);
+    LocalDate currentDate = LocalDate.of(2021, 12, 14);
 
 
     @Override
@@ -26,4 +26,13 @@ public class CompanyContributor implements InfoContributor {
         LocalDate newDate = currentDate.plusDays(1);
     };
 
+    public LocalDate newDay()
+    {
+        currentDate = currentDate.plusDays(1);
+        return currentDate;
+    }
+
+    public LocalDate getCurrentDate() {
+        return currentDate;
+    }
 }

@@ -8,7 +8,6 @@ import com.siit.finalproject.entity.DestinationEntity;
 import com.siit.finalproject.entity.OrderEntity;
 import com.siit.finalproject.enums.OrderEnum;
 import com.siit.finalproject.exception.DataNotFound;
-import com.siit.finalproject.enums.OrderEnum;
 import com.siit.finalproject.repository.DestinationRepository;
 import com.siit.finalproject.repository.OrderRepository;
 import jakarta.transaction.Transactional;
@@ -19,9 +18,6 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
@@ -71,7 +67,7 @@ public class OrderService {
     }
 
     @Transactional
-    public Long addOrder(OrderDto orderDto) {
+    public OrderEntity addOrder(OrderDto orderDto) {
         Optional<DestinationEntity> destination = destinationRepository.findByName(orderDto.getName());
         List<String> destinationsNotFound = new ArrayList<>();
         if(destination.isPresent())
@@ -80,18 +76,17 @@ public class OrderService {
             order.setDestination(destination.get());
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             //postman trimite invers data?????
-            LocalDate localDate = LocalDate.parse(order.getDeliveryDate(), formatter);
-            LocalDate date = LocalDate.now();
+            LocalDate localDate = order.getDeliveryDate();
+            LocalDate date = LocalDate.of(2021, 12, 14);
             if (localDate.isBefore(date)){
 
-               return 0L;
+               return null;
             }
             order.setStatus(OrderEnum.NEW);
-            OrderEntity savedOrder = orderRepository.save(order);
-            return savedOrder.getId();
+            return orderRepository.save(order);
 
         }
-        return 0L;
+        return null;
     }
 
     public void updateOrderStatus(Long orderId, OrderEnum orderEnum) throws DataNotFound
@@ -108,8 +103,8 @@ public class OrderService {
     }
     public void shipping()
     {
-        String thisDay;
-        thisDay = companyContributor.newDay().toString();
+        LocalDate thisDay;
+        thisDay = companyContributor.newDay();
         orderRepository.findAll().stream()
                 .filter(orderEntity -> orderEntity.getDeliveryDate().equals(thisDay))
                 .forEach(orderEntity -> {
@@ -125,44 +120,54 @@ public class OrderService {
 
         List<DestinationEntity> destinationEntityList = destinationRepository.findAll().stream().toList();
 
-        for(DestinationEntity destination : destinationEntityList)
-        {
+        for(DestinationEntity destination : destinationEntityList) {
             List<Long> orderIds = new ArrayList<>();
             List<OrderEntity> orders = todayOrders.stream()
                     .filter(orderEntity -> orderEntity.getDestination().getId().equals(destination.getId())).toList();
             orders.forEach(orderEntity -> orderIds.add(orderEntity.getId()));
-            startDeliveries( destination, orderIds);
-    public List<OrderEntity>getAllOrders (){
+            startDeliveries(destination, orderIds);
+        }
+
+    }
+    public List<OrderEntity> getAllOrders()
+    {
 
         return (List<OrderEntity>) orderRepository.findAll();
     }
-    public List<OrderEntity>getOrdersByDestinationAndDate(String Destination,String Date){
+    public List<String> getOrdersStatusByDate(LocalDate date){
+        List<OrderEntity>allOrders = this.getAllOrders();
+        List<String>selectedOrdersStatus = new ArrayList<>();
 
-       List<OrderEntity>allOrders = this.getAllOrders();
-       List<OrderEntity>selectedOrders = new ArrayList<>();
         for (OrderEntity order : allOrders) {
 
-            if(Destination.equals("all") && order.getDeliveryDate().equals(Date)){
-                selectedOrders.add(order);
-            }
-            else if (order.getDestination().getName().equals(Destination) && order.getDeliveryDate().equals(Date)) {
-                selectedOrders.add(order);
+            if(order.getDeliveryDate().equals(date)){
+                selectedOrdersStatus.add("[Id: "
+                        + order.getId().toString()
+                        + " Status: "
+                        + order.getStatus().toString()
+                        + "\n");
             }
         }
-        return selectedOrders;
+        return selectedOrdersStatus;
     }
 
-        //    private CompanyContributor companyContributor;
-        //    public OrderService(CompanyContributor companyContributor) {
-        //        this.companyContributor = companyContributor;
-        //        companyContributor.incrementCurrentDate();
-        //    }
 
-        }
+//    public List<OrderEntity>getOrdersByDestinationAndDate(String Destination,String Date){
+//
+//        List<OrderEntity>allOrders = this.getAllOrders();
+//        List<OrderEntity>selectedOrders = new ArrayList<>();
 
-
-
-    }
+//        for (OrderEntity order : allOrders) {
+//
+//            if(Destination.equals("all") && order.getDeliveryDate().equals(Date)){
+//                selectedOrders.add(order);
+//            }
+//            else if (order.getDestination().getName().equals(Destination) && order.getDeliveryDate().equals(Date)) {
+//                selectedOrders.add(order);
+//            }
+//        }
+//        return selectedOrders;
+//    }
     public void startDeliveries(DestinationEntity destination, List<Long> orderIds)
     {
 
@@ -171,8 +176,8 @@ public class OrderService {
 
     public List<String> shippingTest()
     {
-        String thisDay;
-        thisDay = companyContributor.newDay().toString();
+        LocalDate thisDay;
+        thisDay = companyContributor.newDay();
         orderRepository.findAll().stream()
                 .filter(orderEntity -> orderEntity.getDeliveryDate().equals(thisDay))
                 .forEach(orderEntity -> {
@@ -202,3 +207,4 @@ public class OrderService {
         return test;
     }
 }
+

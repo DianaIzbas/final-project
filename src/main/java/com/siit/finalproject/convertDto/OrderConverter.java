@@ -17,7 +17,7 @@ public class OrderConverter {
         }
 
         orderEntity.setName((orderDto.getName()));
-        orderEntity.setDeliveryDate(orderDto.getDate().toString());
+        orderEntity.setDeliveryDate(orderDto.getDate());
 
         return orderEntity;
     }

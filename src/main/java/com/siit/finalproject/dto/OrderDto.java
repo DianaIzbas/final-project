@@ -23,6 +23,5 @@ public class OrderDto {
     @NotNull(message = "Date cannot be null")
     @JsonFormat(pattern = "dd-MM-yyyy")
     @Temporal(TemporalType.DATE)
-    @FutureOrPresent(message = "Date cannot be earlier than today")
     private LocalDate date;
 }
