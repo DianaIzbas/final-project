@@ -11,6 +11,7 @@ import com.siit.finalproject.exception.DataNotFound;
 import com.siit.finalproject.repository.DestinationRepository;
 import com.siit.finalproject.repository.OrderRepository;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -19,6 +20,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+@Slf4j
 @Service
 public class OrderService {
     private final CompanyContributor companyContributor;
@@ -26,14 +28,15 @@ public class OrderService {
     private final OrderConverter orderConverter;
     private final DestinationRepository destinationRepository;
     private final DestinationResponse destinationResponse;
+    private final ShippingService shippingService;
 
-    public OrderService(CompanyContributor companyContributor, OrderRepository orderRepository, OrderConverter orderConverter, DestinationRepository destinationRepository, DestinationResponse destinationResponse) {
+    public OrderService(CompanyContributor companyContributor, OrderRepository orderRepository, OrderConverter orderConverter, DestinationRepository destinationRepository, DestinationResponse destinationResponse, ShippingService shippingService) {
         this.companyContributor = companyContributor;
         this.orderRepository = orderRepository;
         this.orderConverter = orderConverter;
         this.destinationRepository = destinationRepository;
-
         this.destinationResponse = destinationResponse;
+        this.shippingService = shippingService;
     }
 
 
@@ -56,8 +59,7 @@ public class OrderService {
                 orderEntity.setStatus(OrderEnum.NEW);
                 orderRepository.save(orderEntity);
             } else {
-                if(!destinationsNotFound.contains(values[0]))
-                {
+                if (!destinationsNotFound.contains(values[0])) {
                     destinationsNotFound.add(values[0]);
                 }
             }
@@ -70,17 +72,16 @@ public class OrderService {
     public OrderEntity addOrder(OrderDto orderDto) {
         Optional<DestinationEntity> destination = destinationRepository.findByName(orderDto.getName());
         List<String> destinationsNotFound = new ArrayList<>();
-        if(destination.isPresent())
-        {
+        if (destination.isPresent()) {
             OrderEntity order = orderConverter.fromDtoToEntity(orderDto);
             order.setDestination(destination.get());
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             //postman trimite invers data?????
             LocalDate localDate = order.getDeliveryDate();
             LocalDate date = LocalDate.of(2021, 12, 14);
-            if (localDate.isBefore(date)){
+            if (localDate.isBefore(date)) {
 
-               return null;
+                return null;
             }
             order.setStatus(OrderEnum.NEW);
             return orderRepository.save(order);
@@ -101,6 +102,7 @@ public class OrderService {
         }
         orderRepository.save(order);
     }
+
     public void shipping()
     {
         LocalDate thisDay;
@@ -120,27 +122,31 @@ public class OrderService {
 
         List<DestinationEntity> destinationEntityList = destinationRepository.findAll().stream().toList();
 
-        for(DestinationEntity destination : destinationEntityList) {
+        for (DestinationEntity destination : destinationEntityList) {
             List<Long> orderIds = new ArrayList<>();
             List<OrderEntity> orders = todayOrders.stream()
                     .filter(orderEntity -> orderEntity.getDestination().getId().equals(destination.getId())).toList();
             orders.forEach(orderEntity -> orderIds.add(orderEntity.getId()));
-            startDeliveries(destination, orderIds);
+
+            shippingService.startDeliveries(destination, orderIds);
+
         }
 
     }
+
     public List<OrderEntity> getAllOrders()
     {
 
         return orderRepository.findAll();
     }
-    public List<String> getOrdersStatusByDate(LocalDate date){
-        List<OrderEntity>allOrders = this.getAllOrders();
-        List<String>selectedOrdersStatus = new ArrayList<>();
+
+    public List<String> getOrdersStatusByDate(LocalDate date) {
+        List<OrderEntity> allOrders = this.getAllOrders();
+        List<String> selectedOrdersStatus = new ArrayList<>();
 
         for (OrderEntity orderEntity : allOrders) {
             OrderDto orderDto = orderConverter.fromEntityToDto(orderEntity);
-            if(orderDto.getDate().equals(date)){
+            if (orderDto.getDate().equals(date)) {
                 selectedOrdersStatus.add("[Id: "
                         + orderDto.getId().toString()
                         + " Status: "
@@ -150,6 +156,7 @@ public class OrderService {
         }
         return selectedOrdersStatus;
     }
+}
 
 
 //    public List<OrderEntity>getOrdersByDestinationAndDate(String Destination,String Date){
@@ -168,44 +175,48 @@ public class OrderService {
 //        }
 //        return selectedOrders;
 //    }
-    public void startDeliveries(DestinationEntity destination, List<Long> orderIds)
-    {
+//    @Async
+//    public void startDeliveries(DestinationEntity destination, List<Long> orderIds)
+//    {
+//        System.out.println(destination.getName());
+//        try {
+//            Thread.sleep(10000);
+//        } catch (InterruptedException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
-
-
-    }
-
-    public List<String> shippingTest()
-    {
-        LocalDate thisDay;
-        thisDay = companyContributor.newDay();
-        orderRepository.findAll().stream()
-                .filter(orderEntity -> orderEntity.getDeliveryDate().equals(thisDay))
-                .forEach(orderEntity -> {
-                    try {
-                        updateOrderStatus(orderEntity.getId(), OrderEnum.DELIVERING);
-                    } catch (DataNotFound e) {
-                        e.printStackTrace();
-                    }
-                });
-
-        List<OrderEntity> todayOrders = orderRepository.findAll().stream()
-                .filter(orderEntity -> orderEntity.getDeliveryDate().equals(thisDay)).toList();
-
-        List<DestinationEntity> destinationEntityList = destinationRepository.findAll().stream().toList();
-
-        List<String> test = new ArrayList<>();
-
-        for(DestinationEntity destination : destinationEntityList)
-        {
-            List<Long> orderIds = new ArrayList<>();
-            List<OrderEntity> orders = todayOrders.stream()
-                    .filter(orderEntity -> orderEntity.getDestination().getId().equals(destination.getId())).toList();
-            orders.forEach(orderEntity -> orderIds.add(orderEntity.getId()));
-            startDeliveries( destination, orderIds);
-            test.add(destination.getName() + orderIds);
-        }
-        return test;
-    }
-}
+//    public List<String> shippingTest()
+//    {
+//        LocalDate thisDay;
+//        thisDay = companyContributor.newDay();
+//        orderRepository.findAll().stream()
+//                .filter(orderEntity -> orderEntity.getDeliveryDate().equals(thisDay))
+//                .forEach(orderEntity -> {
+//                    try {
+//                        updateOrderStatus(orderEntity.getId(), OrderEnum.DELIVERING);
+//                    } catch (DataNotFound e) {
+//                        e.printStackTrace();
+//                    }
+//                });
+//
+//        List<OrderEntity> todayOrders = orderRepository.findAll().stream()
+//                .filter(orderEntity -> orderEntity.getDeliveryDate().equals(thisDay)).toList();
+//
+//        List<DestinationEntity> destinationEntityList = destinationRepository.findAll().stream().toList();
+//
+//        List<String> test = new ArrayList<>();
+//
+//        for(DestinationEntity destination : destinationEntityList)
+//        {
+//            List<Long> orderIds = new ArrayList<>();
+//            List<OrderEntity> orders = todayOrders.stream()
+//                    .filter(orderEntity -> orderEntity.getDestination().getId().equals(destination.getId())).toList();
+//            orders.forEach(orderEntity -> orderIds.add(orderEntity.getId()));
+//            startDeliveries( destination, orderIds);
+//            test.add(destination.getName() + orderIds);
+//        }
+//        return test;
+//    }
+//}
 

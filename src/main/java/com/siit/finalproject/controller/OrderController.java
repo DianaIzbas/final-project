@@ -4,7 +4,6 @@ import com.siit.finalproject.actuator.CompanyContributor;
 import com.siit.finalproject.dto.DestinationResponse;
 import com.siit.finalproject.dto.OrderDto;
 import com.siit.finalproject.entity.OrderEntity;
-import com.siit.finalproject.repository.OrderRepository;
 import com.siit.finalproject.service.OrderService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -22,13 +21,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/order")
 public class OrderController {
-    private final OrderRepository repository;
     private final OrderService service;
     private final DestinationResponse destinationResponse;
     private final CompanyContributor companyContributor;
 
-    public OrderController(OrderRepository repository, OrderService service, DestinationResponse destinationResponse, CompanyContributor companyContributor) {
-        this.repository = repository;
+
+    public OrderController(OrderService service, DestinationResponse destinationResponse, CompanyContributor companyContributor) {
         this.service = service;
         this.destinationResponse = destinationResponse;
         this.companyContributor = companyContributor;
@@ -99,6 +97,7 @@ public class OrderController {
         return new ResponseEntity<>(orders.toString(), HttpStatus.OK);
 
     }
+
 
 //    @GetMapping("/status")
 //    public ResponseEntity<Integer> getStatus(@Valid @RequestParam(required = false) String date, @RequestParam(required = false) String destination){

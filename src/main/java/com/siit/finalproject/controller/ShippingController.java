@@ -34,16 +34,16 @@ public class ShippingController
         return new ResponseEntity<>("Orders are being delivered ", HttpStatus.OK);
     }
 
-    @PostMapping("/test")
-    public ResponseEntity<String> shippingTest()
-    {
-        List<String> test = new ArrayList<>();
-        try
-        {
-            test.addAll(orderService.shippingTest());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return new ResponseEntity<>(test.toString(), HttpStatus.OK);
-    }
+//    @PostMapping("/test")
+//    public ResponseEntity<String> shippingTest()
+//    {
+//        List<String> test = new ArrayList<>();
+//        try
+//        {
+//            test.addAll(orderService.shippingTest());
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return new ResponseEntity<>(test.toString(), HttpStatus.OK);
+//    }
 }
