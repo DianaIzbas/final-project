@@ -43,7 +43,7 @@ public class OrderController {
 
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseEntity<>("Please select a file with orders to upload. ", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Invalid file path", HttpStatus.BAD_REQUEST);
         }
         if(destinationResponse.getResponse().size() >= 1)
         {
@@ -57,9 +57,8 @@ public class OrderController {
     public ResponseEntity<String> addOrder(@Valid @RequestBody List<OrderDto> ordersDto) {
         ArrayList<OrderDto> failedOrders = new ArrayList<OrderDto>();
         ArrayList<OrderDto> successfulOrders = new ArrayList<OrderDto>();
-        OrderEntity orderAdd = null;
+        OrderEntity orderAdd;
         for (OrderDto order : ordersDto) {
-
             try {
                 orderAdd = service.addOrder(order);
                 if (orderAdd == null) {
@@ -73,7 +72,7 @@ public class OrderController {
             successfulOrders.add(order);
 
         }
-        return new ResponseEntity<>("SuccessfulOrders:" + successfulOrders.toString() + "\n FailedOrders:" + failedOrders.toString(), HttpStatus.OK);
+        return new ResponseEntity<>("SuccessfulOrders:" + successfulOrders + "\n FailedOrders:" + failedOrders, HttpStatus.OK);
     }
 
     @GetMapping("/status")

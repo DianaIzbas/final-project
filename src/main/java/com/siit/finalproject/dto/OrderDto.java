@@ -24,4 +24,13 @@ public class OrderDto {
     @JsonFormat(pattern = "dd-MM-yyyy")
     @Temporal(TemporalType.DATE)
     private LocalDate date;
+
+    @Override
+    public String toString() {
+        return "{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", date=" + date +
+                '}';
+    }
 }

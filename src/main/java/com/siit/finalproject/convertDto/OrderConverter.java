@@ -21,4 +21,19 @@ public class OrderConverter {
 
         return orderEntity;
     }
+
+    public OrderDto fromEntityToDto(OrderEntity orderEntity)
+    {
+        OrderDto orderDto = new OrderDto();
+
+        if(orderEntity.getId() != null && orderEntity.getId() != 0)
+        {
+            orderDto.setId(orderEntity.getId());
+        }
+
+        orderDto.setName((orderEntity.getName()));
+        orderDto.setDate(orderEntity.getDeliveryDate());
+
+        return orderDto;
+    }
 }

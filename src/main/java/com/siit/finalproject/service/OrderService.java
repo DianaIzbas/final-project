@@ -132,19 +132,19 @@ public class OrderService {
     public List<OrderEntity> getAllOrders()
     {
 
-        return (List<OrderEntity>) orderRepository.findAll();
+        return orderRepository.findAll();
     }
     public List<String> getOrdersStatusByDate(LocalDate date){
         List<OrderEntity>allOrders = this.getAllOrders();
         List<String>selectedOrdersStatus = new ArrayList<>();
 
-        for (OrderEntity order : allOrders) {
-
-            if(order.getDeliveryDate().equals(date)){
+        for (OrderEntity orderEntity : allOrders) {
+            OrderDto orderDto = orderConverter.fromEntityToDto(orderEntity);
+            if(orderDto.getDate().equals(date)){
                 selectedOrdersStatus.add("[Id: "
-                        + order.getId().toString()
+                        + orderDto.getId().toString()
                         + " Status: "
-                        + order.getStatus().toString()
+                        + orderEntity.getStatus().toString()
                         + "\n");
             }
         }
@@ -170,6 +170,7 @@ public class OrderService {
 //    }
     public void startDeliveries(DestinationEntity destination, List<Long> orderIds)
     {
+
 
 
     }

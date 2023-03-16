@@ -17,4 +17,13 @@ public class DestinationDto
 
     @Min(value = 1, message = "Distance must be higher than 0")
     private int distance;
+
+    @Override
+    public String toString() {
+        return "{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", distance=" + distance +
+                '}';
+    }
 }

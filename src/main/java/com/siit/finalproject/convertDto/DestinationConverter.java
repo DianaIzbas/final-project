@@ -21,4 +21,18 @@ public class DestinationConverter
 
         return destinationEntity;
     }
+    public DestinationDto fromEntityToDto(DestinationEntity destinationEntity)
+    {
+        DestinationDto destinationDto = new DestinationDto();
+
+        if(destinationEntity.getId() != null && destinationEntity.getId() != 0)
+        {
+            destinationDto.setId(destinationEntity.getId());
+        }
+
+        destinationDto.setName((destinationEntity.getName()));
+        destinationDto.setDistance((destinationEntity.getDistance()));
+
+        return destinationDto;
+    }
 }
