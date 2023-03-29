@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 @Component
 public class CompanyContributor implements InfoContributor {
-    Integer overallProfit=258;
+    Integer overallProfit = 0;
     LocalDate currentDate = LocalDate.of(2021, 12, 14);
 
 
@@ -34,5 +34,13 @@ public class CompanyContributor implements InfoContributor {
 
     public LocalDate getCurrentDate() {
         return currentDate;
+    }
+
+    public Integer getOverallProfit() {
+        return overallProfit;
+    }
+
+    public void setOverallProfit(Integer overallProfit) {
+        this.overallProfit = overallProfit;
     }
 }

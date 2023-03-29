@@ -27,6 +27,7 @@ public class OrderEntity
     private OrderEnum status;
 
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "destination_id", nullable = false)
+    @JoinColumn(name = "destination_id")
     private DestinationEntity destination;
+
 }

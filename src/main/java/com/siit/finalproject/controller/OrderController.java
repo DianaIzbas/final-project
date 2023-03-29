@@ -7,6 +7,7 @@ import com.siit.finalproject.entity.OrderEntity;
 import com.siit.finalproject.enums.OrderEnum;
 import com.siit.finalproject.exception.DataNotFound;
 import com.siit.finalproject.service.OrderService;
+import com.siit.finalproject.service.ShippingService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,15 +24,18 @@ import java.util.List;
 @RestController
 @RequestMapping("/order")
 public class OrderController {
-    private final OrderService service;
+    private final OrderService orderService;
     private final DestinationResponse destinationResponse;
     private final CompanyContributor companyContributor;
+    private final ShippingService shippingService;
 
 
-    public OrderController(OrderService service, DestinationResponse destinationResponse, CompanyContributor companyContributor) {
-        this.service = service;
+
+    public OrderController(OrderService service, DestinationResponse destinationResponse, CompanyContributor companyContributor, ShippingService shippingService) {
+        this.orderService = service;
         this.destinationResponse = destinationResponse;
         this.companyContributor = companyContributor;
+        this.shippingService = shippingService;
     }
 
     @PostMapping("/upload-csv")
@@ -39,7 +43,7 @@ public class OrderController {
     {
         try
         {   BufferedReader file = new BufferedReader(new FileReader(filePath));
-            service.saveOrders(file);
+            orderService.saveOrders(file);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -60,7 +64,7 @@ public class OrderController {
         OrderEntity orderAdd;
         for (OrderDto order : ordersDto) {
             try {
-                orderAdd = service.addOrder(order);
+                orderAdd = orderService.addOrder(order);
                 if (orderAdd == null) {
                     failedOrders.add(order);
                     continue;
@@ -75,29 +79,29 @@ public class OrderController {
         return new ResponseEntity<>("SuccessfulOrders:" + successfulOrders + "\n FailedOrders:" + failedOrders, HttpStatus.OK);
     }
 
+
     @GetMapping("/status")
-    public ResponseEntity<String> getStatus(@Valid @RequestParam(required = false) String dateString){
+    public ResponseEntity<String> getStatus(@Valid @RequestParam(required = false) String date, @RequestParam(required = false) String destination){
 
-        List<String> orders = new ArrayList<>();
-        try {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        LocalDate thisDate = null;
+        if (date == null || date.equals("")){
 
-            LocalDate date = companyContributor.getCurrentDate();
-
-            if (dateString != null){
-
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-                date = LocalDate.parse(dateString,formatter);
-            }
-
-            orders = service.getOrdersStatusByDate(date);
-
-        } catch (Exception e) {
-            e.printStackTrace();
+            thisDate = companyContributor.getCurrentDate();
         }
 
+        if (destination == null || destination.equals("")){
 
+            thisDate = LocalDate.parse(date, formatter);
+            destination = "all";
+        }
+
+        List<String> orders = orderService.getOrdersByDestinationAndDate(destination, thisDate);
+        if(orders.size() == 0)
+        {
+            return new ResponseEntity<>("No orders for today: " + destination + " " + thisDate, HttpStatus.OK);
+        }
         return new ResponseEntity<>(orders.toString(), HttpStatus.OK);
-
     }
 
     @PostMapping("/cancel")
@@ -105,14 +109,14 @@ public class OrderController {
 
         ArrayList<Long> failedIds = new ArrayList<>();
         ArrayList<Long> successfulIds = new ArrayList<>();
-        List<OrderEntity> orders = service.getOrdersByIds(ids);
+        List<OrderEntity> orders = orderService.getOrdersByIds(ids);
 
-        for (OrderEntity order : orders) {
-
+        for (OrderEntity order : orders)
+        {
             if (order.getStatus() == OrderEnum.NEW || order.getStatus() == OrderEnum.DELIVERING) {
 
                 try {
-                    service.updateOrderStatus(order.getId(),OrderEnum.CANCELED );
+                    shippingService.updateOrderStatus(order.getId(), OrderEnum.CANCELED);
                 } catch (DataNotFound dataNotFound) {
                     dataNotFound.printStackTrace();
                 }
@@ -126,34 +130,4 @@ public class OrderController {
         return new ResponseEntity<>("SuccessfulIds:" + successfulIds + "\n FailedIds:" + failedIds, HttpStatus.OK);
 
     }
-
-
-//    @GetMapping("/status")
-//    public ResponseEntity<Integer> getStatus(@Valid @RequestParam(required = false) String date, @RequestParam(required = false) String destination){
-//
-//        if (date == null || date.equals("")){
-//
-//            date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")).toString();
-//        }
-//
-//        if (destination == null || destination.equals("")){
-//
-//            destination = "all";
-//        }
-//
-//        List<OrderEntity> orders = service.getOrdersByDestinationAndDate(destination, date);
-//
-//
-//        return new ResponseEntity<>(orders.size(), HttpStatus.OK);
-//    }
-
-
-
-//    @PutMapping("/current-date")
-//    public ResponseEntity<Resource> updateResource(@PathVariable Long id, @RequestBody Resource updatedResource, @RequestParam(name = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date currentDate) {
-//        // logic to update the resource using the updatedResource object, the id parameter, and the currentDate parameter
-//        Resource savedResource = .updateResource(id, updatedResource, currentDate);
-//
-//        return ResponseEntity.ok(savedResource);
-//    }
 }
