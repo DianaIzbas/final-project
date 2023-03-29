@@ -4,6 +4,8 @@ import com.siit.finalproject.actuator.CompanyContributor;
 import com.siit.finalproject.dto.DestinationResponse;
 import com.siit.finalproject.dto.OrderDto;
 import com.siit.finalproject.entity.OrderEntity;
+import com.siit.finalproject.enums.OrderEnum;
+import com.siit.finalproject.exception.DataNotFound;
 import com.siit.finalproject.service.OrderService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -95,6 +97,33 @@ public class OrderController {
 
 
         return new ResponseEntity<>(orders.toString(), HttpStatus.OK);
+
+    }
+
+    @PostMapping("/cancel")
+    public ResponseEntity<String> cancelOrders(@Valid @RequestParam List<Long> ids){
+
+        ArrayList<Long> failedIds = new ArrayList<>();
+        ArrayList<Long> successfulIds = new ArrayList<>();
+        List<OrderEntity> orders = service.getOrdersByIds(ids);
+
+        for (OrderEntity order : orders) {
+
+            if (order.getStatus() == OrderEnum.NEW || order.getStatus() == OrderEnum.DELIVERING) {
+
+                try {
+                    service.updateOrderStatus(order.getId(),OrderEnum.CANCELED );
+                } catch (DataNotFound dataNotFound) {
+                    dataNotFound.printStackTrace();
+                }
+                successfulIds.add(order.getId());
+            }else {
+
+                failedIds.add(order.getId());
+            }
+
+        }
+        return new ResponseEntity<>("SuccessfulIds:" + successfulIds + "\n FailedIds:" + failedIds, HttpStatus.OK);
 
     }
 

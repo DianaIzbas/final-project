@@ -156,6 +156,20 @@ public class OrderService {
         }
         return selectedOrdersStatus;
     }
+
+    public List<OrderEntity> getOrdersByIds(List<Long> ids){
+        List<OrderEntity> orders = new ArrayList<OrderEntity>();
+
+        for (Long id : ids) {
+
+            orders.add(orderRepository.findById(id).get());
+
+        }
+
+        return orders;
+    }
+
+
 }
 
 
