@@ -30,7 +30,6 @@ public class OrderController {
     private final ShippingService shippingService;
 
 
-
     public OrderController(OrderService service, DestinationResponse destinationResponse, CompanyContributor companyContributor, ShippingService shippingService) {
         this.orderService = service;
         this.destinationResponse = destinationResponse;
@@ -41,16 +40,15 @@ public class OrderController {
     @PostMapping("/upload-csv")
     public ResponseEntity<String> uploadDestinationCsv(@RequestParam(name = "filePath") String filePath)
     {
-        try
-        {   BufferedReader file = new BufferedReader(new FileReader(filePath));
+        try {
+            BufferedReader file = new BufferedReader(new FileReader(filePath));
             orderService.saveOrders(file);
 
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>("Invalid file path", HttpStatus.BAD_REQUEST);
         }
-        if(destinationResponse.getResponse().size() >= 1)
-        {
+        if (destinationResponse.getResponse().size() >= 1) {
             return new ResponseEntity<>("The following destinations are not in DB. "
                     + destinationResponse.getResponse().toString(), HttpStatus.BAD_REQUEST);
         }
@@ -81,38 +79,36 @@ public class OrderController {
 
 
     @GetMapping("/status")
-    public ResponseEntity<String> getStatus(@Valid @RequestParam(required = false) String date, @RequestParam(required = false) String destination){
+    public ResponseEntity<String> getStatus(@Valid @RequestParam(required = false) String date, @RequestParam(required = false) String destination) {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         LocalDate thisDate = null;
-        if (date == null || date.equals("")){
+        if (date == null || date.equals("")) {
 
             thisDate = companyContributor.getCurrentDate();
         }
 
-        if (destination == null || destination.equals("")){
+        if (destination == null || destination.equals("")) {
 
             thisDate = LocalDate.parse(date, formatter);
             destination = "all";
         }
 
         List<String> orders = orderService.getOrdersByDestinationAndDate(destination, thisDate);
-        if(orders.size() == 0)
-        {
+        if (orders.size() == 0) {
             return new ResponseEntity<>("No orders for today: " + destination + " " + thisDate, HttpStatus.OK);
         }
         return new ResponseEntity<>(orders.toString(), HttpStatus.OK);
     }
 
     @PostMapping("/cancel")
-    public ResponseEntity<String> cancelOrders(@Valid @RequestParam List<Long> ids){
+    public ResponseEntity<String> cancelOrders(@Valid @RequestParam List<Long> ids) {
 
         ArrayList<Long> failedIds = new ArrayList<>();
         ArrayList<Long> successfulIds = new ArrayList<>();
         List<OrderEntity> orders = orderService.getOrdersByIds(ids);
 
-        for (OrderEntity order : orders)
-        {
+        for (OrderEntity order : orders) {
             if (order.getStatus() == OrderEnum.NEW || order.getStatus() == OrderEnum.DELIVERING) {
 
                 try {
@@ -121,7 +117,7 @@ public class OrderController {
                     dataNotFound.printStackTrace();
                 }
                 successfulIds.add(order.getId());
-            }else {
+            } else {
 
                 failedIds.add(order.getId());
             }

@@ -8,8 +8,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class DestinationDto
-{
+public class DestinationDto {
     private Long id;
 
     @NotEmpty(message = "Name cannot be null!")

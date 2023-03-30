@@ -11,10 +11,7 @@ import com.siit.finalproject.exception.DataNotFound;
 import com.siit.finalproject.repository.DestinationRepository;
 import com.siit.finalproject.repository.OrderRepository;
 import jakarta.transaction.Transactional;
-import lombok.extern.log4j.Log4j2;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -26,6 +23,7 @@ import java.util.*;
 @Slf4j
 @Service
 public class OrderService {
+
     private final CompanyContributor companyContributor;
     private final OrderRepository orderRepository;
     private final OrderConverter orderConverter;
@@ -43,7 +41,6 @@ public class OrderService {
         this.shippingService = shippingService;
     }
 
-//    Logger log = LoggerFactory.getLogger(OrderService.class);
     public void saveOrders(BufferedReader br) throws IOException
     {
 
@@ -101,8 +98,7 @@ public class OrderService {
                 .filter(orderEntity -> orderEntity.getDeliveryDate().equals(thisDay))
                 .forEach(orderEntity -> {
                     try {
-                        if(orderRepository.findById(orderEntity.getId()).get().getStatus() != OrderEnum.CANCELED)
-                        {
+                        if (orderRepository.findById(orderEntity.getId()).get().getStatus() != OrderEnum.CANCELED) {
                             shippingService.updateOrderStatus(orderEntity.getId(), OrderEnum.DELIVERING);
                         }
 
@@ -135,31 +131,25 @@ public class OrderService {
         }
 
     }
-// sa se stearga si ordarele pentru destinatia stearsa dar pastrare cele delivered
 
     public List<String> getOrdersByDestinationAndDate(String destination, LocalDate date) {
-//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-//        LocalDate thisDate = LocalDate.parse(date, formatter);
         List<String> selectedOrders = new ArrayList<>();
         if (destination.equals("all")) {
             List<OrderEntity> allOrders = orderRepository.findAll().stream()
                     .filter(orderEntity -> orderEntity.getDeliveryDate().equals(date)).toList();
-            for(OrderEntity order : allOrders)
-            {
-                selectedOrders.add("Order with id:"+
+            for (OrderEntity order : allOrders) {
+                selectedOrders.add("Order with id:" +
                         order.getId().toString() + " with destination " +
                         order.getName() + " and status " +
                         order.getStatus().toString() +
                         "\n");
             }
-        }else
-        {
+        } else {
             List<OrderEntity> allOrders = orderRepository.findAll().stream()
                     .filter(orderEntity -> orderEntity.getDeliveryDate().equals(date))
                     .filter(orderEntity -> orderEntity.getName().equals(destination)).toList();
-            for(OrderEntity order : allOrders)
-            {
-                selectedOrders.add("Order with id:"+
+            for (OrderEntity order : allOrders) {
+                selectedOrders.add("Order with id:" +
                         order.getId().toString() + " with destination " +
                         order.getName() + " and status " +
                         order.getStatus().toString() +
@@ -169,7 +159,7 @@ public class OrderService {
         return selectedOrders;
     }
 
-    public List<OrderEntity> getOrdersByIds(List<Long> ids){
+    public List<OrderEntity> getOrdersByIds(List<Long> ids) {
         List<OrderEntity> orders = new ArrayList<OrderEntity>();
 
         for (Long id : ids) {
@@ -180,6 +170,19 @@ public class OrderService {
         return orders;
     }
 
+
+    public void markDestinationAsNullByDestinationId(Long destinationId)
+    {
+        List<OrderEntity> allByDestination_id = orderRepository.findAllByDestination_Id(destinationId);
+        for (OrderEntity orderEntity : allByDestination_id) {
+            orderEntity.setDestination(null);
+        }
+        orderRepository.saveAll(allByDestination_id);
+    }
+
+    public void deleteOrderById(Long id) {
+        orderRepository.deleteById(id);
+    }
 
 }
 

@@ -16,8 +16,7 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-public class ShippingService
-{
+public class ShippingService {
     private final CompanyContributor companyContributor;
     private final OrderRepository orderRepository;
 
@@ -32,26 +31,23 @@ public class ShippingService
         log.info("Starting " + orderIds.size()
                 + " deliveries for " + destination.getName()
                 + " on " + Thread.currentThread().getName()
-                +" for " + destination.getDistance()
+                + " for " + destination.getDistance()
                 + " km");
         try {
-            Thread.sleep(destination.getDistance()* 1000L);
+            Thread.sleep(destination.getDistance() * 1000L);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
         int ordersNumber = 0;
-        for(Long id : orderIds)
-        {
-            if(orderRepository.findById(id).get().getStatus() != OrderEnum.CANCELED)
-            {
+        for (Long id : orderIds) {
+            if (orderRepository.findById(id).get().getStatus() != OrderEnum.CANCELED) {
                 ordersNumber++;
             }
         }
 
         companyContributor.setOverallProfit(companyContributor.getOverallProfit() + (destination.getDistance() * ordersNumber));
 
-        for (Long id : orderIds )
-        {
+        for (Long id : orderIds) {
             try {
                 updateOrderStatus(id, OrderEnum.DELIVERED);
             } catch (DataNotFound e) {

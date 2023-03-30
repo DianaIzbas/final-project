@@ -11,8 +11,7 @@ public class OrderConverter {
     {
         OrderEntity orderEntity = new OrderEntity();
 
-        if(orderDto.getId() != null && orderDto.getId() != 0)
-        {
+        if (orderDto.getId() != null && orderDto.getId() != 0) {
             orderEntity.setId(orderDto.getId());
         }
 
@@ -26,8 +25,7 @@ public class OrderConverter {
     {
         OrderDto orderDto = new OrderDto();
 
-        if(orderEntity.getId() != null && orderEntity.getId() != 0)
-        {
+        if (orderEntity.getId() != null && orderEntity.getId() != 0) {
             orderDto.setId(orderEntity.getId());
         }
 

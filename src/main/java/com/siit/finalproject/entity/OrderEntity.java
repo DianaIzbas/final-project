@@ -10,8 +10,7 @@ import java.time.LocalDate;
 
 @Data
 @Entity(name = "orders")
-public class OrderEntity
-{
+public class OrderEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

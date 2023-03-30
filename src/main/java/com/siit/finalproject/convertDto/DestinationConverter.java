@@ -5,14 +5,12 @@ import com.siit.finalproject.entity.DestinationEntity;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DestinationConverter
-{
+public class DestinationConverter {
     public DestinationEntity fromDtoToEntity(DestinationDto destinationDto)
     {
         DestinationEntity destinationEntity = new DestinationEntity();
 
-        if(destinationDto.getId() != null && destinationDto.getId() != 0)
-        {
+        if (destinationDto.getId() != null && destinationDto.getId() != 0) {
             destinationEntity.setId(destinationDto.getId());
         }
 
@@ -21,12 +19,12 @@ public class DestinationConverter
 
         return destinationEntity;
     }
+
     public DestinationDto fromEntityToDto(DestinationEntity destinationEntity)
     {
         DestinationDto destinationDto = new DestinationDto();
 
-        if(destinationEntity.getId() != null && destinationEntity.getId() != 0)
-        {
+        if (destinationEntity.getId() != null && destinationEntity.getId() != 0) {
             destinationDto.setId(destinationEntity.getId());
         }
 

@@ -9,7 +9,6 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @Component
-public class DestinationResponse
-{
+public class DestinationResponse {
     List<String> response;
 }

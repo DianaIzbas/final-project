@@ -16,8 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/destinations")
-public class DestinationController
-{
+public class DestinationController {
     private final DestinationService service;
 
     public DestinationController(DestinationService service) {
@@ -27,8 +26,8 @@ public class DestinationController
     @PostMapping("/upload-csv")
     public ResponseEntity<String> uploadDestinationCsv(@RequestParam(name = "filePath") String filePath)
     {
-        try
-        {   BufferedReader file = new BufferedReader(new FileReader(filePath));
+        try {
+            BufferedReader file = new BufferedReader(new FileReader(filePath));
             service.saveDestination(file);
 
         } catch (Exception e) {
@@ -80,8 +79,7 @@ public class DestinationController
             e.printStackTrace();
             return new ResponseEntity<>("Invalid id", HttpStatus.BAD_REQUEST);
         }
-        if (destinations == null)
-        {
+        if (destinations == null) {
             return new ResponseEntity<>("Destination with id: " + id + " does not exist in DB", HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>("Destination is: " + destinations, HttpStatus.OK);

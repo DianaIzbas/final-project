@@ -3,31 +3,31 @@ package com.siit.finalproject.service;
 
 import com.siit.finalproject.convertDto.DestinationConverter;
 import com.siit.finalproject.dto.DestinationDto;
-import com.siit.finalproject.dto.OrderDto;
 import com.siit.finalproject.entity.DestinationEntity;
-import com.siit.finalproject.entity.OrderEntity;
 import com.siit.finalproject.enums.OrderEnum;
 import com.siit.finalproject.exception.DataNotFound;
 import com.siit.finalproject.repository.DestinationRepository;
+import com.siit.finalproject.repository.OrderRepository;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class DestinationService
-{
+public class DestinationService {
+    private final OrderService orderService;
     private final DestinationRepository destinationRepository;
     private final DestinationConverter destinationConverter;
+    private final OrderRepository orderRepository;
 
-    public DestinationService(DestinationRepository destinationRepository, DestinationConverter destinationConverter) {
+    public DestinationService(OrderService orderService, DestinationRepository destinationRepository, DestinationConverter destinationConverter, OrderRepository orderRepository) {
+        this.orderService = orderService;
         this.destinationRepository = destinationRepository;
         this.destinationConverter = destinationConverter;
+        this.orderRepository = orderRepository;
     }
 
 
@@ -35,20 +35,19 @@ public class DestinationService
     {
 
         DestinationDto destinationDto = new DestinationDto();
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] values = line.split(",");
-                destinationDto.setName(values[0]);
-                destinationDto.setDistance(Integer.parseInt(values[1]));
-                DestinationEntity destinationEntity = destinationConverter.fromDtoToEntity(destinationDto);
-                destinationRepository.save(destinationEntity);
-            }
+        String line;
+        while ((line = br.readLine()) != null) {
+            String[] values = line.split(",");
+            destinationDto.setName(values[0]);
+            destinationDto.setDistance(Integer.parseInt(values[1]));
+            DestinationEntity destinationEntity = destinationConverter.fromDtoToEntity(destinationDto);
+            destinationRepository.save(destinationEntity);
+        }
     }
 
     public List<Long> addDestination(List<DestinationDto> destinationDtoList) {
         List<Long> addedIds = new ArrayList<>();
-        for(DestinationDto destinationDto : destinationDtoList)
-        {
+        for (DestinationDto destinationDto : destinationDtoList) {
             DestinationEntity destinationEntity = destinationConverter.fromDtoToEntity(destinationDto);
             destinationRepository.save(destinationEntity);
             addedIds.add(destinationEntity.getId());
@@ -58,12 +57,10 @@ public class DestinationService
 
     public List<Long> updateDestination(List<DestinationDto> destinationDtoList) throws DataNotFound {
         List<Long> updateIds = new ArrayList<>();
-        for(DestinationDto destinationDto : destinationDtoList)
-        {
+        for (DestinationDto destinationDto : destinationDtoList) {
             Optional<DestinationEntity> destinationEntityOptional = destinationRepository.findById(destinationDto.getId());
 
-            if(destinationEntityOptional.isEmpty())
-            {
+            if (destinationEntityOptional.isEmpty()) {
                 throw new DataNotFound(String.format("The destination with id %s could not be found in database.", destinationDto.getId()));
             }
 
@@ -97,6 +94,11 @@ public class DestinationService
         if (destinationEntityOptional.isEmpty()) {
             throw new DataNotFound(String.format("The destination with id %s could not be found in database.", id));
         }
+        orderRepository.findAll().stream()
+                .filter(orderEntity -> orderEntity.getDestination().getId().equals(id))
+                .filter(orderEntity -> orderEntity.getStatus() != OrderEnum.DELIVERED)
+                .forEach(orderEntity -> orderService.deleteOrderById(orderEntity.getId()));
+        orderService.markDestinationAsNullByDestinationId(id);
         destinationRepository.deleteById(id);
     }
 }

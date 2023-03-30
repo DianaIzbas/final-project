@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
+
 @Component
 public class CompanyContributor implements InfoContributor {
     Integer overallProfit = 0;
@@ -22,9 +23,10 @@ public class CompanyContributor implements InfoContributor {
         builder.withDetail("Date and profit information", data);
     }
 
-    public void incrementCurrentDate(){
+    public void incrementCurrentDate() {
         LocalDate newDate = currentDate.plusDays(1);
-    };
+    }
+
 
     public LocalDate newDay()
     {
