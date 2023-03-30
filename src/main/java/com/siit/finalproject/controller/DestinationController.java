@@ -86,8 +86,8 @@ public class DestinationController
         }
         return new ResponseEntity<>("Destination is: " + destinations, HttpStatus.OK);
     }
-    @DeleteMapping("/byId{destinationId}")
-    public ResponseEntity<String> deleteDestinationById(@RequestParam(name = "id") Long id)
+    @DeleteMapping("/byId/{destinationId}")
+    public ResponseEntity<String> deleteDestinationById(@PathVariable(name = "destinationId") Long id)
     {
         try {
 

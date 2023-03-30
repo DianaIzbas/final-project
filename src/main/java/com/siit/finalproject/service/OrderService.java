@@ -156,6 +156,15 @@ public class OrderService {
         }
         return selectedOrdersStatus;
     }
+
+    public void markDestinationAsNullByDestinationId(Long destinationId)
+    {
+        List<OrderEntity> allByDestination_id = orderRepository.findAllByDestination_Id(destinationId);
+        for (OrderEntity orderEntity:allByDestination_id) {
+            orderEntity.setDestination(null);
+        }
+        orderRepository.saveAll(allByDestination_id);
+    }
 }
 
 

@@ -3,18 +3,13 @@ package com.siit.finalproject.service;
 
 import com.siit.finalproject.convertDto.DestinationConverter;
 import com.siit.finalproject.dto.DestinationDto;
-import com.siit.finalproject.dto.OrderDto;
 import com.siit.finalproject.entity.DestinationEntity;
-import com.siit.finalproject.entity.OrderEntity;
-import com.siit.finalproject.enums.OrderEnum;
 import com.siit.finalproject.exception.DataNotFound;
 import com.siit.finalproject.repository.DestinationRepository;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -24,10 +19,12 @@ public class DestinationService
 {
     private final DestinationRepository destinationRepository;
     private final DestinationConverter destinationConverter;
+    private final OrderService orderService;
 
-    public DestinationService(DestinationRepository destinationRepository, DestinationConverter destinationConverter) {
+    public DestinationService(DestinationRepository destinationRepository, DestinationConverter destinationConverter, OrderService service) {
         this.destinationRepository = destinationRepository;
         this.destinationConverter = destinationConverter;
+        this.orderService = service;
     }
 
 
@@ -97,6 +94,7 @@ public class DestinationService
         if (destinationEntityOptional.isEmpty()) {
             throw new DataNotFound(String.format("The destination with id %s could not be found in database.", id));
         }
+        orderService.markDestinationAsNullByDestinationId(id);
         destinationRepository.deleteById(id);
     }
 }
