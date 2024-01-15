@@ -1,0 +1,12 @@
+Step 1: Password from string to binary .
+Explanation: The password is convert to binary code .
+Step 2: Initialize the matrix.
+Explanation: Generator_Matrix, P_Matrix and S_Matrix is read from a file and save in their own class.
+Step 3: Create publicKey.
+Explanation: The publicKey is created using: P * generatorMatrix * S.
+Step 4: Create encryptMessage.
+Explanation: The message is encrypted multiplying the binary password with the publicKey.
+Step 5: Modify the encrypt Message.
+Explanation: An random error is add to the encryptMessage.
+Step 6: Save and return.
+Explanation: The publicKey and final encryptedMessage is saved in a txt file.
